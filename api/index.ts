@@ -70,17 +70,13 @@ app.post("/create-customer", async (req, res) => {
     email: req.body.email
   })
 
-  // Save the customer.id in your database alongside your user.
-  // We're simulating authentication with a cookie.
-  res.cookie("customer", customer.id, { maxAge: 900000, httpOnly: true })
-
   res.send({ customer: customer })
 })
 
 app.post("/create-subscription", async (req, res) => {
   // Simulate authenticated user. In practice this will be the
   // Stripe Customer ID related to the authenticated user.
-  const customerId = req.cookies["customer"]
+  const customerId = req.body.customerId
 
   // Create the subscription
   const priceId = req.body.priceId
@@ -107,7 +103,7 @@ app.post("/create-subscription", async (req, res) => {
 })
 
 app.get("/invoice-preview", async (req, res) => {
-  const customerId = req.cookies["customer"]
+  const customerId = req.body.customerId
   const priceId = process.env[req.query.newPriceLookupKey.toUpperCase()]
 
   const subscription = await stripe.subscriptions.retrieve(
@@ -167,7 +163,7 @@ app.post("/update-subscription", async (req, res) => {
 app.get("/subscriptions", async (req, res) => {
   // Simulate authenticated user. In practice this will be the
   // Stripe Customer ID related to the authenticated user.
-  const customerId = req.cookies["customer"]
+  const customerId = req.body.customerId
 
   const subscriptions = await stripe.subscriptions.list({
     customer: customerId,
