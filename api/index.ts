@@ -54,7 +54,7 @@ app.use((req, res, next) => {
 
 app.get("/config", async (req, res) => {
   const prices = await stripe.prices.list({
-    lookup_keys: ["sample_basic", "sample_premium"],
+    // lookup_keys: ["sample_basic", "sample_premium"],
     expand: ["data.product"]
   })
 
