@@ -7,6 +7,7 @@ const { sql } = require("@vercel/postgres")
 const bodyParser = require("body-parser")
 const cookieParser = require("cookie-parser")
 const path = require("path")
+const cors = require('cors')
 
 // Create application/x-www-form-urlencoded parser
 const urlencodedParser = bodyParser.urlencoded({ extended: false })
@@ -41,6 +42,7 @@ app.use(express.static("public"))
 
 // Use cookies to simulate logged in user.
 app.use(cookieParser())
+app.use(cors())
 
 app.use((req, res, next) => {
   if (req.originalUrl === "/webhook") {
