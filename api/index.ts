@@ -36,16 +36,16 @@ app.use(express.static("public"));
 app.use(cookieParser());
 app.use(cors());
 
-app.get("/pay/:clientSecret", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "public", "checkout.html"));
-});
-
 app.use((req, res, next) => {
   if (req.originalUrl === "/webhook") {
     next();
   } else {
     bodyParser.json()(req, res, next);
   }
+});
+
+app.get("/pay/:clientSecret", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "components", "checkout.html"));
 });
 
 app.get("/config", async (req, res) => {
