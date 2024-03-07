@@ -1,13 +1,12 @@
-require("dotenv").config()
+import path from "path"
+import { sql } from "@vercel/postgres"
+import bodyParser from "body-parser"
+import cookieParser from "cookie-parser"
+import cors from "cors"
+import express from "express"
+import { Stripe } from "stripe"
 
-const express = require("express")
-const app = express()
-const { sql } = require("@vercel/postgres")
-
-const bodyParser = require("body-parser")
-const cookieParser = require("cookie-parser")
-const path = require("path")
-const cors = require("cors")
+import "dotenv/config"
 
 // Create application/x-www-form-urlencoded parser
 const urlencodedParser = bodyParser.urlencoded({ extended: false })
@@ -28,7 +27,8 @@ if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PUBLISHABLE_KEY) {
   process.exit()
 }
 
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY)
+const app = express()
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 app.use(express.static("public"))
 
@@ -88,7 +88,7 @@ app.post("/create-payment", async (req, res) => {
         email,
         metadata: { "notion-user-id": userId }
       })
-      customerId = customer
+      customerId = customer.id
     }
 
     res.send({ customerId })
@@ -139,9 +139,11 @@ app.post("/create-subscription", async (req, res) => {
       expand: ["latest_invoice.payment_intent"]
     })
 
+    const latest_invoice = subscription.latest_invoice
+
     res.send({
       subscriptionId: subscription.id,
-      clientSecret: subscription.latest_invoice.payment_intent.client_secret
+      clientSecret: latest_invoice?.payment_intent?.client_secret
     })
   } catch (error) {
     return res.status(400).send({ error: { message: error.message } })
@@ -173,7 +175,7 @@ app.get("/invoice-preview", async (req, res) => {
 app.post("/cancel-subscription", async (req, res) => {
   // Cancel the subscription
   try {
-    const deletedSubscription = await stripe.subscriptions.del(
+    const deletedSubscription = await stripe.subscriptions.deleteDiscount(
       req.body.subscriptionId
     )
 
@@ -231,7 +233,7 @@ app.post(
       event = stripe.webhooks.constructEvent(
         req.body,
         req.header("Stripe-Signature"),
-        process.env.STRIPE_WEBHOOK_SECRET
+        process.env.STRIPE_WEBHOOK_SECRET || ""
       )
     } catch (err) {
       console.log(err)
@@ -314,4 +316,4 @@ app.post(
 
 app.listen(3000, () => console.log("Server ready on port 3000."))
 
-module.exports = app
+export default app
