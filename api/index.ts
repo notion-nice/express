@@ -48,6 +48,10 @@ app.get("/pay/:clientSecret", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "components", "checkout.html"));
 });
 
+app.get("/checkout", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "components", "checkout.html"));
+});
+
 app.get("/config", async (req, res) => {
   const prices = await stripe.prices.list({
     // lookup_keys: ["sample_basic", "sample_premium"],
