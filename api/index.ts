@@ -1,31 +1,31 @@
-require("dotenv").config()
+require("dotenv").config();
 
-const express = require("express")
-const app = express()
-const { sql } = require("@vercel/postgres")
+const express = require("express");
+const app = express();
+const { sql } = require("@vercel/postgres");
 
-const bodyParser = require("body-parser")
-const cookieParser = require("cookie-parser")
-const path = require("path")
-const cors = require('cors')
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const path = require("path");
+const cors = require("cors");
 
 // Create application/x-www-form-urlencoded parser
-const urlencodedParser = bodyParser.urlencoded({ extended: false })
+const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PUBLISHABLE_KEY) {
   console.log(
     "The .env file is not configured. Follow the instructions in the readme to configure the .env file. https://github.com/stripe-samples/subscription-use-cases"
-  )
-  console.log("")
+  );
+  console.log("");
   process.env.STRIPE_SECRET_KEY
     ? ""
-    : console.log("Add STRIPE_SECRET_KEY to your .env file.")
+    : console.log("Add STRIPE_SECRET_KEY to your .env file.");
 
   process.env.STRIPE_PUBLISHABLE_KEY
     ? ""
-    : console.log("Add STRIPE_PUBLISHABLE_KEY to your .env file.")
+    : console.log("Add STRIPE_PUBLISHABLE_KEY to your .env file.");
 
-  process.exit()
+  process.exit();
 }
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY, {
@@ -34,81 +34,103 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY, {
     // For sample support and debugging, not required for production:
     name: "stripe-samples/subscription-use-cases/fixed-price",
     version: "0.0.1",
-    url: "https://github.com/stripe-samples/subscription-use-cases/fixed-price"
-  }
-})
+    url: "https://github.com/stripe-samples/subscription-use-cases/fixed-price",
+  },
+});
 
-app.use(express.static("public"))
+app.use(express.static("public"));
 
 // Use cookies to simulate logged in user.
-app.use(cookieParser())
-app.use(cors())
+app.use(cookieParser());
+app.use(cors());
 
 app.use((req, res, next) => {
   if (req.originalUrl === "/webhook") {
-    next()
+    next();
   } else {
-    bodyParser.json()(req, res, next)
+    bodyParser.json()(req, res, next);
   }
-})
+});
 
 app.get("/config", async (req, res) => {
   const prices = await stripe.prices.list({
     // lookup_keys: ["sample_basic", "sample_premium"],
-    expand: ["data.product"]
-  })
+    expand: ["data.product"],
+  });
 
   res.send({
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
-    prices: prices.data
-  })
-})
+    prices: prices.data,
+  });
+});
 
 app.post("/create-customer", async (req, res) => {
   // Create a new customer object
   const customer = await stripe.customers.create({
-    email: req.body.email
-  })
+    email: req.body.email,
+  });
 
-  res.send({ customer: customer })
-})
+  res.send({ customer: customer });
+});
+
+app.post("/create-payment-intent", async (req, res) => {
+  const { amount, customerId } = req.body;
+  try {
+    // Create a PaymentIntent with the order amount and currency
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      customer: customerId,
+      currency: "hkd",
+      // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (error) {
+    return res.status(400).send({ error: { message: error.message } });
+  }
+});
 
 app.post("/create-subscription", async (req, res) => {
   // Simulate authenticated user. In practice this will be the
   // Stripe Customer ID related to the authenticated user.
-  const customerId = req.body.customerId
+  const customerId = req.body.customerId;
 
   // Create the subscription
-  const priceId = req.body.priceId
+  const priceId = req.body.priceId;
 
   try {
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
       items: [
         {
-          price: priceId
-        }
+          price: priceId,
+        },
       ],
       payment_behavior: "default_incomplete",
-      expand: ["latest_invoice.payment_intent"]
-    })
+      expand: ["latest_invoice.payment_intent"],
+    });
 
     res.send({
       subscriptionId: subscription.id,
-      clientSecret: subscription.latest_invoice.payment_intent.client_secret
-    })
+      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+    });
   } catch (error) {
-    return res.status(400).send({ error: { message: error.message } })
+    return res.status(400).send({ error: { message: error.message } });
   }
-})
+});
 
 app.get("/invoice-preview", async (req, res) => {
-  const customerId = req.body.customerId
-  const priceId = process.env[req.query.newPriceLookupKey.toUpperCase()]
+  const customerId = req.body.customerId;
+  const priceId = process.env[req.query.newPriceLookupKey.toUpperCase()];
 
   const subscription = await stripe.subscriptions.retrieve(
     req.query.subscriptionId
-  )
+  );
 
   const invoice = await stripe.invoices.retrieveUpcoming({
     customer: customerId,
@@ -116,88 +138,88 @@ app.get("/invoice-preview", async (req, res) => {
     subscription_items: [
       {
         id: subscription.items.data[0].id,
-        price: priceId
-      }
-    ]
-  })
+        price: priceId,
+      },
+    ],
+  });
 
-  res.send({ invoice })
-})
+  res.send({ invoice });
+});
 
 app.post("/cancel-subscription", async (req, res) => {
   // Cancel the subscription
   try {
     const deletedSubscription = await stripe.subscriptions.del(
       req.body.subscriptionId
-    )
+    );
 
-    res.send({ subscription: deletedSubscription })
+    res.send({ subscription: deletedSubscription });
   } catch (error) {
-    return res.status(400).send({ error: { message: error.message } })
+    return res.status(400).send({ error: { message: error.message } });
   }
-})
+});
 
 app.post("/update-subscription", async (req, res) => {
   try {
     const subscription = await stripe.subscriptions.retrieve(
       req.body.subscriptionId
-    )
+    );
     const updatedSubscription = await stripe.subscriptions.update(
       req.body.subscriptionId,
       {
         items: [
           {
             id: subscription.items.data[0].id,
-            price: process.env[req.body.newPriceLookupKey.toUpperCase()]
-          }
-        ]
+            price: process.env[req.body.newPriceLookupKey.toUpperCase()],
+          },
+        ],
       }
-    )
+    );
 
-    res.send({ subscription: updatedSubscription })
+    res.send({ subscription: updatedSubscription });
   } catch (error) {
-    return res.status(400).send({ error: { message: error.message } })
+    return res.status(400).send({ error: { message: error.message } });
   }
-})
+});
 
 app.get("/subscriptions", async (req, res) => {
   // Simulate authenticated user. In practice this will be the
   // Stripe Customer ID related to the authenticated user.
-  const customerId = req.body.customerId
+  const customerId = req.body.customerId;
 
   const subscriptions = await stripe.subscriptions.list({
     customer: customerId,
     status: "all",
-    expand: ["data.default_payment_method"]
-  })
+    expand: ["data.default_payment_method"],
+  });
 
-  res.json({ subscriptions })
-})
+  res.json({ subscriptions });
+});
 
 app.post(
   "/webhook",
   bodyParser.raw({ type: "application/json" }),
   async (req, res) => {
     // Retrieve the event by verifying the signature using the raw body and secret.
-    let event
+    let event;
 
     try {
       event = stripe.webhooks.constructEvent(
         req.body,
         req.header("Stripe-Signature"),
         process.env.STRIPE_WEBHOOK_SECRET
-      )
+      );
     } catch (err) {
-      console.log(err)
-      console.log(`⚠️  Webhook signature verification failed.`)
+      console.log(err);
+      console.log(`⚠️  Webhook signature verification failed.`);
       console.log(
         `⚠️  Check the env file and enter the correct webhook secret.`
-      )
-      return res.sendStatus(400)
+      );
+      return res.sendStatus(400);
     }
 
     // Extract the object from the event.
-    const dataObject = event.data.object
+    const dataObject = event.data.object;
 
     // Handle the event
     // Review important events for Billing webhooks
@@ -209,44 +231,45 @@ app.post(
           // The subscription automatically activates after successful payment
           // Set the payment method used to pay the first invoice
           // as the default payment method for that subscription
-          const subscription_id = dataObject["subscription"]
-          const payment_intent_id = dataObject["payment_intent"]
+          const subscription_id = dataObject["subscription"];
+          const payment_intent_id = dataObject["payment_intent"];
 
           // Retrieve the payment intent used to pay the subscription
-          const payment_intent =
-            await stripe.paymentIntents.retrieve(payment_intent_id)
+          const payment_intent = await stripe.paymentIntents.retrieve(
+            payment_intent_id
+          );
 
           try {
             const subscription = await stripe.subscriptions.update(
               subscription_id,
               {
-                default_payment_method: payment_intent.payment_method
+                default_payment_method: payment_intent.payment_method,
               }
-            )
+            );
 
             console.log(
               "Default payment method set for subscription:" +
                 payment_intent.payment_method
-            )
+            );
           } catch (err) {
-            console.log(err)
+            console.log(err);
             console.log(
               `⚠️  Falied to update the default payment method for subscription: ${subscription_id}`
-            )
+            );
           }
         }
 
-        break
+        break;
       case "invoice.payment_failed":
         // If the payment fails or the customer does not have a valid payment method,
         //  an invoice.payment_failed event is sent, the subscription becomes past_due.
         // Use this webhook to notify your user that their payment has
         // failed and to retrieve new card details.
-        break
+        break;
       case "invoice.finalized":
         // If you want to manually send out invoices to your customers
         // or store them locally to reference to avoid hitting Stripe rate limits.
-        break
+        break;
       case "customer.subscription.deleted":
         if (event.request != null) {
           // handle a subscription cancelled by your request
@@ -255,17 +278,17 @@ app.post(
           // handle subscription cancelled automatically based
           // upon your subscription settings.
         }
-        break
+        break;
       case "customer.subscription.trial_will_end":
         // Send notification to your user that the trial will end
-        break
+        break;
       default:
       // Unexpected event type
     }
-    res.sendStatus(200)
+    res.sendStatus(200);
   }
-)
+);
 
-app.listen(3000, () => console.log("Server ready on port 3000."))
+app.listen(3000, () => console.log("Server ready on port 3000."));
 
-module.exports = app
+module.exports = app;
