@@ -74,13 +74,13 @@ app.post("/create-customer", async (req, res) => {
 });
 
 app.post("/create-payment-intent", async (req, res) => {
-  const { amount, customerId } = req.body;
+  const { amount, currency, customerId } = req.body;
   try {
     // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
+      currency,
       customer: customerId,
-      currency: "hkd",
       // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
       automatic_payment_methods: {
         enabled: true,
