@@ -1,4 +1,5 @@
 import path from "path"
+import { fileURLToPath } from "url"
 import { sql } from "@vercel/postgres"
 import bodyParser from "body-parser"
 import cookieParser from "cookie-parser"
@@ -27,8 +28,13 @@ if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PUBLISHABLE_KEY) {
   process.exit()
 }
 
-const app = express()
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+
+const app = express()
+app.set("view engine", "ejs")
+app.set("views", path.join(__dirname, "..", "views"))
 
 app.use(express.static("public"))
 
@@ -44,8 +50,23 @@ app.use((req, res, next) => {
   }
 })
 
-app.get("/pay/:clientSecret", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "components", "checkout.html"))
+app.get("/pay/:customer", async (req, res) => {
+  try {
+    const customerSession = await stripe.customerSessions.create({
+      customer: req.params.customer,
+      components: {
+        pricing_table: {
+          enabled: true
+        }
+      }
+    })
+    res.render("pay", {
+      CLIENT_SECRET: customerSession.client_secret,
+      CUSTOMER_EMAIL: customerSession.customer.email
+    })
+  } catch (error) {
+    return res.status(400).send({ error: { message: error.message } })
+  }
 })
 
 app.get("/checkout", (req, res) => {

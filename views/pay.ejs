@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Accept a payment</title>
+    <meta name="description" content="A demo of a payment on Stripe" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <h1>We offer plans that help any business!</h1>
+    <!-- Paste your embed code script here. -->
+    <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+    <stripe-pricing-table
+      pricing-table-id="prctbl_1OrkHRIYBVPkGVmhOUJUtqp7"
+      publishable-key="pk_test_51OYUywIYBVPkGVmhjdUePZ8tLR20ghBFpz1ZZo8axR48auBqk1ZcwpVc6gRo9V2psVdgGJyhUA4INWer8eMOgclB00HnOEAMwW"
+      customer-session-client-secret="<%= CLIENT_SECRET %>"
+      customer-email="<%= CUSTOMER_EMAIL %>">
+    </stripe-pricing-table>
+  </body>
+</html>
