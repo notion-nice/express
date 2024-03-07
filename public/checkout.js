@@ -18,6 +18,7 @@ document
 // Fetches a payment intent and captures the client secret
 async function initialize() {
   const parts = window.location.pathname.split("/");
+  if (!window.location.pathname.startsWith('/pay')) return
   const clientSecret = parts.pop();
   const appearance = {
     theme: "stripe",
