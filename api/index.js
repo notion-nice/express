@@ -50,7 +50,7 @@ app.use((req, res, next) => {
   }
 })
 
-app.get("/pay/:customer/:theme", async (req, res) => {
+app.get("/pay/:customer/:theme?", async (req, res) => {
   let PRICING_TABLE_ID = "prctbl_1OrkHRIYBVPkGVmhOUJUtqp7"
   if (theme == "dark") PRICING_TABLE_ID = "prctbl_1Os45vIYBVPkGVmhjfyE7RXf"
   try {
