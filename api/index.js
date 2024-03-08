@@ -50,7 +50,9 @@ app.use((req, res, next) => {
   }
 })
 
-app.get("/pay/:customer", async (req, res) => {
+app.get("/pay/:customer/:theme", async (req, res) => {
+  let PRICING_TABLE_ID = "prctbl_1OrkHRIYBVPkGVmhOUJUtqp7"
+  if (theme == "dark") PRICING_TABLE_ID = "prctbl_1Os45vIYBVPkGVmhjfyE7RXf"
   try {
     const customerSession = await stripe.customerSessions.create({
       customer: req.params.customer,
@@ -61,6 +63,7 @@ app.get("/pay/:customer", async (req, res) => {
       }
     })
     res.render("pay", {
+      PRICING_TABLE_ID,
       CLIENT_SECRET: customerSession.client_secret,
       CUSTOMER_EMAIL: customerSession.customer.email
     })
