@@ -1,11 +1,17 @@
 import path from "path"
 import { fileURLToPath } from "url"
+import { markdownToBlocks } from "@tryfabric/martian"
 import { sql } from "@vercel/postgres"
 import bodyParser from "body-parser"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 import express from "express"
+import { fromHtml } from "hast-util-from-html"
+import { toMdast } from "hast-util-to-mdast"
+import { toMarkdown } from "mdast-util-to-markdown"
 import { Stripe } from "stripe"
+
+// import sitdownConverter from "./sitdownConverter"
 
 import "dotenv/config"
 
@@ -52,7 +58,8 @@ app.use((req, res, next) => {
 
 app.get("/pay/:customer/:theme?", async (req, res) => {
   let PRICING_TABLE_ID = "prctbl_1OrkHRIYBVPkGVmhOUJUtqp7"
-  if (req.params.theme == "dark") PRICING_TABLE_ID = "prctbl_1Os45vIYBVPkGVmhjfyE7RXf"
+  if (req.params.theme == "dark")
+    PRICING_TABLE_ID = "prctbl_1Os45vIYBVPkGVmhjfyE7RXf"
   try {
     const customerSession = await stripe.customerSessions.create({
       customer: req.params.customer,
@@ -337,6 +344,19 @@ app.post(
     res.sendStatus(200)
   }
 )
+
+app.post("/converter-html-to-blocks", async (req, res) => {
+  // Create a new customer object
+  const hast = fromHtml(req.body.html, { fragment: true })
+  const mdast = toMdast(hast)
+  const markdown = toMarkdown(mdast)
+  if (!req.body.toBlock) {
+    return markdown
+  }
+  // Markdown string to Notion Blocks
+  const blocks = markdownToBlocks(markdown)
+  res.send({ blocks })
+})
 
 app.listen(3000, () => console.log("Server ready on port 3000."))
 
