@@ -345,7 +345,8 @@ app.post(
   }
 )
 
-app.post("/converter-html-to-blocks", async (req, res) => {
+app.post("/converter", async (req, res) => {
+  console.log('converter', req.body.html)
   // Create a new customer object
   const hast = fromHtml(req.body.html, { fragment: true })
   const mdast = toMdast(hast)
