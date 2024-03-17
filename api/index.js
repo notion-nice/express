@@ -10,8 +10,6 @@ import { toMdast } from "hast-util-to-mdast"
 import { toMarkdown } from "mdast-util-to-markdown"
 import { Stripe } from "stripe"
 
-import { converterHtmlToBlocks, html2blocks } from "./pkgs/html2blocks"
-
 import "dotenv/config"
 
 // Create application/x-www-form-urlencoded parser
