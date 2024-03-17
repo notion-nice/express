@@ -1,7 +1,6 @@
 import path from "path"
 import { fileURLToPath } from "url"
 import { markdownToBlocks } from "@tryfabric/martian"
-import { sql } from "@vercel/postgres"
 import bodyParser from "body-parser"
 import cookieParser from "cookie-parser"
 import cors from "cors"
@@ -11,7 +10,7 @@ import { toMdast } from "hast-util-to-mdast"
 import { toMarkdown } from "mdast-util-to-markdown"
 import { Stripe } from "stripe"
 
-// import sitdownConverter from "./sitdownConverter"
+import { converterHtmlToBlocks, html2blocks } from "./pkgs/html2blocks"
 
 import "dotenv/config"
 
@@ -346,17 +345,12 @@ app.post(
 )
 
 app.post("/converter", async (req, res) => {
-  console.log('converter', req.body.html)
-  // Create a new customer object
   const hast = fromHtml(req.body.html, { fragment: true })
   const mdast = toMdast(hast)
   const markdown = toMarkdown(mdast)
-  if (!req.body.toBlock) {
-    return markdown
-  }
-  // Markdown string to Notion Blocks
+
   const blocks = markdownToBlocks(markdown)
-  res.send({ blocks })
+  return res.send({ ok: true, data: { markdown, blocks } })
 })
 
 app.listen(3000, () => console.log("Server ready on port 3000."))
