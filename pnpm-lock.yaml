@@ -6,14 +6,14 @@ settings:
 
 dependencies:
   '@sitdown/juejin':
-    specifier: ^1.1.3
-    version: 1.1.3
+    specifier: 1.1.1
+    version: 1.1.1
   '@sitdown/wechat':
-    specifier: ^1.1.4
-    version: 1.1.4
+    specifier: 1.1.1
+    version: 1.1.1
   '@sitdown/zhihu':
-    specifier: ^1.1.2
-    version: 1.1.2
+    specifier: 1.1.1
+    version: 1.1.1
   '@tryfabric/martian':
     specifier: ^1.2.4
     version: 1.2.4
@@ -48,8 +48,8 @@ dependencies:
     specifier: ^2.1.0
     version: 2.1.0
   sitdown:
-    specifier: ^1.1.7
-    version: 1.1.7
+    specifier: 1.1.1
+    version: 1.1.1
   stripe:
     specifier: ^14.19.0
     version: 14.19.0
@@ -391,16 +391,16 @@ packages:
     dev: true
     optional: true
 
-  /@sitdown/juejin@1.1.3:
-    resolution: {integrity: sha512-3+QigfDEOtYoWTAIRM2Lq6TgwBZV27cjQML259DY/iobGYdSBNwSxmp1AP0YV6PKnPp1Yc+bybFPBaEpxm7i0Q==}
+  /@sitdown/juejin@1.1.1:
+    resolution: {integrity: sha512-6r1kOkIMWvRRVzXeUD1X0+EAdRxYwf6/mmsFs9P5hZ+jRjcNezEWwy+RWJa2v40UjFA6rs+GiNYVo6KJGWVnEA==}
     dev: false
 
-  /@sitdown/wechat@1.1.4:
-    resolution: {integrity: sha512-50Xw9ykes+x1IVMn/+HEJLB3OonQ1LRpWVh5Ukxg+qzj7JqwLtQ+IgW1KDcHzh4TbhIBOZc3CasTjcF+fF+sTg==}
+  /@sitdown/wechat@1.1.1:
+    resolution: {integrity: sha512-as/xAwUY840r5VZxIUrVS8gitnDHw1Wy8vcO3Y6kiWNbQqtAdE1cV4pvYkSaVzNQTKFosgyDwn+d+ii7K++JIw==}
     dev: false
 
-  /@sitdown/zhihu@1.1.2:
-    resolution: {integrity: sha512-e8Xy0WaAb4vJdM9daP1Fw3n1G2MJngilvc8/9UuQrxwoUHNm7GtyZfthuHO8LKp8phAAnS3dvo/HuLWJZo/KTQ==}
+  /@sitdown/zhihu@1.1.1:
+    resolution: {integrity: sha512-kqrJbVhvaTTyWazuLflWYPj8KNECn/knAVznbaGIUTzDUko3C0m0u4Cawd86hhmN17DuzsG1qm1iScgiDNyAAg==}
     dev: false
 
   /@tryfabric/martian@1.2.4:
@@ -2215,8 +2215,8 @@ packages:
       object-inspect: 1.13.1
     dev: false
 
-  /sitdown@1.1.7:
-    resolution: {integrity: sha512-NXRMO7lckr6t+FkvM5/xzSUmu8lLiQvvTMmFr1uQEI/1OGSLeRiYDU4wqULNz26443WAxMnA9LmdWxKzK+9+gA==}
+  /sitdown@1.1.1:
+    resolution: {integrity: sha512-mqWcpFX9Ll+yTuZToSOi8blUVFL9/kaPFvuLIt+Wiyzzr3Jc7DtwVjnCnczRnTU7QlB2pFuKarWPZ5XtCuR7EA==}
     dependencies:
       jsdom: 11.12.0
     transitivePeerDependencies:
